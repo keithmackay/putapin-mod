@@ -12,7 +12,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | 2 | Unix Dispatcher (`claude` function) | ✅ Complete |
 | 3 | Unix Installer / Uninstaller | ✅ Complete |
 | 4 | PowerShell Mod | ✅ Complete |
-| 5 | Windows Installer / Uninstaller | 🔲 Not Started |
+| 5 | Windows Installer / Uninstaller | 🟨 In Progress |
 | 6 | Docs, Manual Verification, Release | 🔲 Not Started |
 
 Legend: 🔲 Not Started · 🟨 In Progress · ✅ Complete
