@@ -152,3 +152,12 @@ descriptive of the behavior under test, not the implementation.
 ---
 
 **Remember**: Tests are not just verification — they're documentation, design tools, and safety nets. Write them first, write them well, and your code will thank you!
+
+---
+
+## Project Exception: Shell Code Coverage (approved by Keith, 2026-11-12)
+
+Shell scripts (`putapin.sh`, `install.sh`, `uninstall.sh`) have no practical line-coverage tool that
+works for both bash and zsh. Instead of the 80% line-coverage target, every branch of the decision
+flow in the implementation plan must have at least one bats test, and the suite must pass under both
+`TEST_SHELL=bash` and `TEST_SHELL=zsh`. PowerShell code follows the same branch-checklist rule via Pester.

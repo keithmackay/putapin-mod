@@ -7,7 +7,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 
 | Phase | Title | Status |
 |---|---|---|
-| 0 | Tooling & Test Harness | 🟨 In Progress |
+| 0 | Tooling & Test Harness | ✅ Complete |
 | 1 | Unix Core Helpers | 🔲 Not Started |
 | 2 | Unix Dispatcher (`claude` function) | 🔲 Not Started |
 | 3 | Unix Installer / Uninstaller | 🔲 Not Started |
@@ -17,8 +17,12 @@ The detailed plan is authoritative; this file must stay in sync with it.
 
 Legend: 🔲 Not Started · 🟨 In Progress · ✅ Complete
 
-**Open question before Phase 1:** shell code is measured by a branch checklist rather than 80% line
-coverage (see plan §0 "Coverage note"). Needs Keith's sign-off.
+**Decided 2026-11-12:** shell code is measured by a branch checklist (every decision-flow branch tested
+under bash and zsh) instead of 80% line coverage. Keith signed off.
+
+**Phase 0 notes:** CI installs Pester 6.x (`-MinimumVersion 5.5` resolves to latest). The Homebrew
+`powershell` formula failed to install (flaky .NET bottle download), so local `pwsh` uses Microsoft's
+official osx-arm64 tarball instead; the local install is still pending and is only needed from Phase 4.
 
 ---
 
