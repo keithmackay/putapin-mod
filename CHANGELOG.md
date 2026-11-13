@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Windows `Install.ps1` / `Uninstall.ps1`: install to `%LOCALAPPDATA%\putapin` and add an ASCII-only source block to the PS 5.1 and PS 7 profiles (OneDrive-redirected Documents supported); preserve each profile's encoding and newline style, keep symlinks, round-trip byte-for-byte with a `.putapin.bak`; warn (without changing anything) when the execution policy blocks profiles
 - PowerShell mod (`windows/putapin.ps1`, PS 5.1 and 7+): same prompt and pass-through rules as zsh/bash, abort sets exit code 130, leaves an existing `claude` alias or third-party function untouched with a warning
 - `install.sh` / `uninstall.sh`: idempotent; installs to `${XDG_CONFIG_HOME:-~/.config}/putapin/` and adds a guarded source block to `.zshrc` (honoring `ZDOTDIR`) and/or `.bashrc`; uninstall restores rc files byte-for-byte, keeps a `.putapin.bak`, and preserves symlinked rc files
 - `claude` wrapper for zsh/bash: bare `claude` in a terminal with a prior session for the (physical) cwd prompts to resume (`--continue`) or start fresh; any arguments, non-TTY, or no prior session pass straight through; never `exec`s; leaves an existing `claude` alias or third-party function untouched with a warning

@@ -932,6 +932,27 @@ every change: `pwsh -NoProfile -c 'Invoke-Pester tests/windows -Output Detailed'
 
 ## Phase 5 — Windows Installer / Uninstaller
 
+> **As built (2026-11-13) — supersedes the code below where they differ:**
+> - Shared helper `windows/ProfileText.ps1` (`Read-PutapinProfile`, `Write-PutapinProfile`,
+>   `Get-PutapinNewline`), dot-sourced by both scripts. It **preserves each profile's encoding**:
+>   BOM'd UTF-8/UTF-16 keep their BOM; BOM-less files are read/written as Latin-1 (1 byte = 1 char)
+>   so ANSI or UTF-8 bytes survive exactly. New profiles are UTF-8 with BOM. The plan's
+>   `Add-Content -Encoding UTF8` would have corrupted UTF-16 profiles.
+> - The source block matches the profile's newline style and, for the default InstallDir, refers to
+>   `$env:LOCALAPPDATA` instead of the expanded path, so it is ASCII even for non-ASCII user names.
+> - Uninstall removes the block plus the one newline install added (regex
+>   `(?s)(\r?\n)?# >>> putapin >>>\r?\n.*?# <<< putapin <<<(\r?\n)?`): install→uninstall is
+>   byte-for-byte for CRLF, LF, no-trailing-newline, ANSI, UTF-8 BOM and UTF-16LE profiles.
+> - Writes go through `[IO.File]::WriteAllBytes`, so symlinked profiles stay symlinks (tested on
+>   the Windows runners, which can create symlinks).
+> - Both scripts are `[CmdletBinding()]` so tests can capture warnings with `-WarningVariable`.
+> - **Pester gotchas:** Pester 6 rejects `BeforeEach` at the file root (wrap in a `Describe`).
+>   Execution-policy warning tests failed until each test used its own literal mock
+>   (`[scriptblock]::Create("'$policy'")`) and captured warnings via `-WarningVariable`; both were
+>   changed together, so which one was the culprit is unknown — keep both.
+> - **Task 5.4 (Windows project-key check) is assigned to Keith** and still open; Phase 5 stays
+>   🟨 until it's done. CI: 76/76 on PS 7.x and Windows PowerShell 5.1.
+
 **Goal:** `windows/Install.ps1` and `windows/Uninstall.ps1`, testable by parameter injection.
 
 ### Task 5.1 — Install tests

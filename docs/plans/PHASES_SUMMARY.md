@@ -91,9 +91,9 @@ Tasks:
 
 Tasks:
 1. Install tests (copy, create profiles, single block, idempotent, policy warning mocked)
-2. Implement `Install.ps1` (LOCALAPPDATA, profile.ps1 for both PS 5.1 and PS 7, Unblock-File, warn but don't change the execution policy)
-3. Uninstall tests and `Uninstall.ps1` (regex block removal, backup)
-4. Manually verify the Windows project-key encoding on a real machine
+2. Implement `Install.ps1` (LOCALAPPDATA, profile.ps1 for both PS 5.1 and PS 7, Unblock-File, warn but don't change the execution policy); shared `ProfileText.ps1` preserves profile encoding + newline style
+3. Uninstall tests and `Uninstall.ps1` (regex block removal → byte-for-byte round trip, backup, symlinks kept)
+4. Manually verify the Windows project-key encoding on a real machine — **assigned to Keith, open** (Tasks 5.1–5.3 done; CI 76/76 on PS 7 and 5.1)
 
 **Deliverables:** Windows installers, verified key encoding.
 

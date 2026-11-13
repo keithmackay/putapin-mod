@@ -12,4 +12,12 @@ Facts the mod depends on. Re-verify after major Claude Code upgrades (plan Task 
 - The key uses the **physical** path: `cd /tmp` → `pwd -P` is `/private/tmp`, and
   `~/.claude/projects` contains 8 `-private-tmp-*` folders and 0 `-tmp-*` folders.
   The wrapper must use `pwd -P`, not `$PWD`.
-- Windows key encoding (`C:\x\y` → `C--x-y`) is **not yet verified** — see plan Task 5.4.
+- Windows key encoding (`C:\x\y` → `C--x-y`) is **not yet verified** — see plan Task 5.4 (Keith).
+  To verify on Windows with Claude Code installed:
+  ```powershell
+  mkdir C:\putapin-check; cd C:\putapin-check
+  claude            # send one message (e.g. "hi"), then /exit
+  Get-ChildItem $HOME\.claude\projects | Where-Object Name -like '*putapin*'
+  ```
+  Expected folder name: `C--putapin-check`. Also note whether the drive letter's case matches
+  what `(Get-Location).ProviderPath` shows.
