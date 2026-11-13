@@ -85,21 +85,21 @@ Describe 'Read-PutapinAnswer' {
         Mock Read-PutapinLine { $script:answers.Dequeue() }
     }
 
-    It 'treats <in> as <out>' -ForEach @(
-        @{ in = '';      out = 'yes' }
-        @{ in = 'y';     out = 'yes' }
-        @{ in = 'Y';     out = 'yes' }
-        @{ in = 'yes';   out = 'yes' }
-        @{ in = 'YeS';   out = 'yes' }
-        @{ in = 'n';     out = 'no' }
-        @{ in = 'N';     out = 'no' }
-        @{ in = 'No';    out = 'no' }
-        @{ in = "  y `t"; out = 'yes' }
-        @{ in = ' n  ';  out = 'no' }
-        @{ in = '   ';   out = 'yes' }
+    It 'treats <answer> as <expected>' -ForEach @(
+        @{ answer = '';      expected = 'yes' }
+        @{ answer = 'y';     expected = 'yes' }
+        @{ answer = 'Y';     expected = 'yes' }
+        @{ answer = 'yes';   expected = 'yes' }
+        @{ answer = 'YeS';   expected = 'yes' }
+        @{ answer = 'n';     expected = 'no' }
+        @{ answer = 'N';     expected = 'no' }
+        @{ answer = 'No';    expected = 'no' }
+        @{ answer = "  y `t"; expected = 'yes' }
+        @{ answer = ' n  ';  expected = 'no' }
+        @{ answer = '   ';   expected = 'yes' }
     ) {
-        $script:answers.Enqueue($in)
-        Read-PutapinAnswer | Should -BeExactly $out
+        $script:answers.Enqueue($answer)
+        Read-PutapinAnswer | Should -BeExactly $expected
     }
     It 're-prompts on garbage until a valid answer' {
         'maybe', 'yess', 'n' | ForEach-Object { $script:answers.Enqueue($_) }
@@ -206,9 +206,8 @@ exit $(if ($env:PUTAPIN_STUB_EXIT) { [int]$env:PUTAPIN_STUB_EXIT } else { 0 })
     }
     It 'writes a putapin error when the real claude is missing' {
         Mock Get-PutapinRealClaude { $null }
-        $err = $null
-        claude -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
-        ($err | Out-String) | Should -Match 'putapin'
+        # claude is a simple function (so -p etc. pass through), so capture via 2>&1.
+        (claude 2>&1 | Out-String) | Should -Match 'putapin'
     }
 }
 
