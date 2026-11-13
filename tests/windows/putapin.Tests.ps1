@@ -28,8 +28,9 @@ Describe 'ConvertTo-PutapinProjectKey' {
 Describe 'Test-PutapinSession' {
     BeforeEach {
         $script:savedConfigDir = $env:CLAUDE_CONFIG_DIR
-        $env:CLAUDE_CONFIG_DIR = Join-Path $TestDrive 'claude-config'
-        $script:projectDir = Join-Path $TestDrive 'work'
+        # $TestDrive is shared by every test in a Describe, so isolate each test's directories.
+        $env:CLAUDE_CONFIG_DIR = Join-Path $TestDrive ([guid]::NewGuid().ToString())
+        $script:projectDir = Join-Path $TestDrive ([guid]::NewGuid().ToString())
         $script:keyDir = Join-Path (Join-Path $env:CLAUDE_CONFIG_DIR 'projects') (ConvertTo-PutapinProjectKey $script:projectDir)
     }
     AfterEach {
@@ -51,7 +52,7 @@ Describe 'Test-PutapinSession' {
     }
     It 'falls back to ~/.claude when CLAUDE_CONFIG_DIR is unset' {
         $env:CLAUDE_CONFIG_DIR = $null
-        $fakeHome = Join-Path $TestDrive 'home'
+        $fakeHome = Join-Path $TestDrive ([guid]::NewGuid().ToString())
         $dir = Join-Path (Join-Path (Join-Path $fakeHome '.claude') 'projects') (ConvertTo-PutapinProjectKey $script:projectDir)
         New-Item -ItemType Directory -Force -Path $dir | Out-Null
         New-Item -ItemType File -Path (Join-Path $dir 's.jsonl') | Out-Null
@@ -206,7 +207,10 @@ exit $(if ($env:PUTAPIN_STUB_EXIT) { [int]$env:PUTAPIN_STUB_EXIT } else { 0 })
     }
     It 'writes a putapin error when the real claude is missing' {
         Mock Get-PutapinRealClaude { $null }
-        # claude is a simple function (so -p etc. pass through), so capture via 2>&1.
+        # Pester runs tests with ErrorActionPreference=Stop; a real session uses Continue,
+        # where Write-Error is non-terminating. claude is a simple function (so -p etc.
+        # pass through) and has no -ErrorAction, so set the preference and capture 2>&1.
+        $ErrorActionPreference = 'Continue'
         (claude 2>&1 | Out-String) | Should -Match 'putapin'
     }
 }
