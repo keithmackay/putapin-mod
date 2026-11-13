@@ -138,3 +138,93 @@ block_count() {
   [ -L "$HOME/.zshrc" ]
   [ "$(block_count "$HOME/dotfiles/zshrc")" -eq 1 ]
 }
+
+# --- uninstall.sh -----------------------------------------------------------
+
+@test "uninstall: removes the block from both rc files" {
+  echo 'export FOO=1' > "$HOME/.bashrc"
+  "$REPO/install.sh"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  refute_file_contains "$BEGIN_MARK" "$HOME/.zshrc"
+  refute_file_contains "$BEGIN_MARK" "$HOME/.bashrc"
+  refute_file_contains 'putapin.sh' "$HOME/.zshrc"
+}
+
+@test "uninstall: round trip leaves the rc byte-for-byte unchanged" {
+  printf 'export FOO=1\n\nalias ll="ls -l"\n' > "$HOME/.zshrc"
+  cp "$HOME/.zshrc" "$BATS_TEST_TMPDIR/original"
+  "$REPO/install.sh"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  cmp "$BATS_TEST_TMPDIR/original" "$HOME/.zshrc"
+}
+
+@test "uninstall: keeps content added after the block" {
+  echo 'export FOO=1' > "$HOME/.zshrc"
+  "$REPO/install.sh"
+  echo 'export BAR=2' >> "$HOME/.zshrc"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  [ "$(cat "$HOME/.zshrc")" = "$(printf 'export FOO=1\nexport BAR=2')" ]
+}
+
+@test "uninstall: writes a .putapin.bak backup" {
+  "$REPO/install.sh"
+  cp "$HOME/.zshrc" "$BATS_TEST_TMPDIR/installed-rc"
+  run "$REPO/uninstall.sh"
+  cmp "$BATS_TEST_TMPDIR/installed-rc" "$HOME/.zshrc.putapin.bak"
+}
+
+@test "uninstall: deletes the installed file and its empty directory" {
+  "$REPO/install.sh"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  [ ! -e "$INSTALLED" ]
+  [ ! -e "$HOME/.config/putapin" ]
+}
+
+@test "uninstall: keeps the directory if it holds other files" {
+  "$REPO/install.sh"
+  touch "$HOME/.config/putapin/notes.txt"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  [ ! -e "$INSTALLED" ]
+  [ -e "$HOME/.config/putapin/notes.txt" ]
+}
+
+@test "uninstall: honors XDG_CONFIG_HOME and ZDOTDIR" {
+  export XDG_CONFIG_HOME="$BATS_TEST_TMPDIR/xdg" ZDOTDIR="$BATS_TEST_TMPDIR/zdot"
+  mkdir -p "$ZDOTDIR"
+  "$REPO/install.sh"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  refute_file_contains "$BEGIN_MARK" "$ZDOTDIR/.zshrc"
+  [ ! -e "$XDG_CONFIG_HOME/putapin/putapin.sh" ]
+}
+
+@test "uninstall: a symlinked rc stays a symlink" {
+  mkdir -p "$HOME/dotfiles"
+  echo 'export FOO=1' > "$HOME/dotfiles/zshrc"
+  ln -s "$HOME/dotfiles/zshrc" "$HOME/.zshrc"
+  "$REPO/install.sh"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  [ -L "$HOME/.zshrc" ]
+  [ "$(cat "$HOME/dotfiles/zshrc")" = "export FOO=1" ]
+}
+
+@test "uninstall: is a no-op when not installed" {
+  echo 'export FOO=1' > "$HOME/.zshrc"
+  run "$REPO/uninstall.sh"
+  [ "$status" -eq 0 ]
+  [ "$(cat "$HOME/.zshrc")" = "export FOO=1" ]
+  [ ! -e "$HOME/.zshrc.putapin.bak" ]
+}
+
+@test "uninstall: shell no longer defines the wrapper" {
+  "$REPO/install.sh"
+  "$REPO/uninstall.sh"
+  run zsh -f -c ". '$HOME/.zshrc'; whence -w claude"
+  [ "$output" != "claude: function" ]
+}

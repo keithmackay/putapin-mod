@@ -68,3 +68,12 @@ assert_output_ends_with() {
   printf 'expected output to end with: %s\nactual output: %s\n' "$1" "$output" >&2
   return 1
 }
+
+# refute_file_contains <text> <file>. Use instead of `! grep`: bash's set -e
+# ignores negated commands, so `! grep` mid-test never fails the test.
+refute_file_contains() {
+  if grep -qF -- "$1" "$2"; then
+    printf 'expected %s NOT to contain: %s\n' "$2" "$1" >&2
+    return 1
+  fi
+}
