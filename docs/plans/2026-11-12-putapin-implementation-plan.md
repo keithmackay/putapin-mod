@@ -501,6 +501,19 @@ Commit: `Add interactive-terminal check`.
 
 ## Phase 2 — Unix Dispatcher (`claude` function)
 
+> **As built (2026-11-13) — supersedes the code below where they differ:**
+> - Keith decided an existing `claude` **function** (someone else's wrapper) gets the same treatment
+>   as an alias: warn on stderr and don't install.
+> - The wrapper is defined as `function claude { ... }`, **not** `claude() { ... }`. Shells
+>   alias-expand `claude()` at *parse* time, so with an alias present the whole file failed to
+>   parse (in both bash and zsh), even inside an un-run `else` branch.
+> - "Is this function ours?" is decided by the function body (`typeset -f claude | grep -q
+>   _putapin_ask`), not a flag variable, so a wrapper defined after putapin survives a re-source.
+> - Guard tests use `run_raw` (doesn't pre-source the mod) and enable alias expansion.
+> - **bats gotcha:** macOS `/bin/bash` is 3.2, where a failing `[[ ]]` that isn't the last line of a
+>   test does NOT fail it. Use the `assert_output_contains` / `refute_output_contains` /
+>   `assert_output_ends_with` helpers in `tests/helpers.bash`, never bare `[[ ]]`.
+
 **Goal:** wire the helpers into the `claude()` function per the decision flow.
 
 ### Task 2.1 — Pass-through cases (write all tests first)

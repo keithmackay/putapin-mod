@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- `claude` wrapper for zsh/bash: bare `claude` in a terminal with a prior session for the (physical) cwd prompts to resume (`--continue`) or start fresh; any arguments, non-TTY, or no prior session pass straight through; never `exec`s; leaves an existing `claude` alias or third-party function untouched with a warning
 - Unix helpers in `putapin.sh`: project-key encoding, prior-session detection, `Resume prior session? (Y/n)` prompt (stderr, whitespace-tolerant, re-prompts on invalid input, aborts on EOF), TTY check
 - Test harnesses: bats (run under bash and zsh) with a `claude` stub, and Pester for PowerShell
 - GitHub Actions CI: ubuntu/macOS × bash/zsh, plus Windows × PowerShell 5.1/7

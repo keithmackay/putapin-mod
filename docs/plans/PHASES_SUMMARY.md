@@ -9,7 +9,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 |---|---|---|
 | 0 | Tooling & Test Harness | ✅ Complete |
 | 1 | Unix Core Helpers | ✅ Complete |
-| 2 | Unix Dispatcher (`claude` function) | 🟨 In Progress |
+| 2 | Unix Dispatcher (`claude` function) | ✅ Complete |
 | 3 | Unix Installer / Uninstaller | 🔲 Not Started |
 | 4 | PowerShell Mod | 🔲 Not Started |
 | 5 | Windows Installer / Uninstaller | 🔲 Not Started |
@@ -58,7 +58,7 @@ Tasks:
 1. Pass-through tests: args, non-TTY, no session
 2. Prompting tests: Enter/y resume (`--continue`), n fresh, EOF → 130 with nothing launched, exit status propagated
 3. Symlinked cwd uses `pwd -P`; implement `claude()` with `command claude`, **never `exec`**
-4. Existing-alias guard: warn and don't define
+4. Guard: an existing alias **or someone else's function** → warn and don't define (`function claude {}` form; ownership checked via `typeset -f`)
 5. Re-sourcing is safe
 
 **Deliverables:** working zsh/bash mod.
