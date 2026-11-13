@@ -10,7 +10,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | 0 | Tooling & Test Harness | ✅ Complete |
 | 1 | Unix Core Helpers | ✅ Complete |
 | 2 | Unix Dispatcher (`claude` function) | ✅ Complete |
-| 3 | Unix Installer / Uninstaller | 🟨 In Progress |
+| 3 | Unix Installer / Uninstaller | ✅ Complete |
 | 4 | PowerShell Mod | 🔲 Not Started |
 | 5 | Windows Installer / Uninstaller | 🔲 Not Started |
 | 6 | Docs, Manual Verification, Release | 🔲 Not Started |
@@ -69,7 +69,7 @@ Tasks:
 Tasks:
 1. Install tests (copy, XDG, rc for `$SHELL`, existing other rc, idempotent, upgrade, harmless if file removed)
 2. Implement `install.sh` (marked `# >>> putapin >>>` block with `[ -f ] &&` guard)
-3. Uninstall tests and `uninstall.sh` (sed range delete, `.putapin.bak` backup, remove file/dir)
+3. Uninstall tests and `uninstall.sh` (awk block removal incl. the added blank line → byte-for-byte round trip; `cat >` write-back keeps symlinks; `.putapin.bak` backup; remove file/dir). Both scripts honor `ZDOTDIR`.
 
 **Deliverables:** `install.sh`, `uninstall.sh`, `tests/install.bats`.
 

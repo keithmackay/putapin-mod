@@ -644,6 +644,22 @@ Test: source the file twice, then run a prompting scenario → still works, no w
 
 ## Phase 3 — Unix Installer / Uninstaller
 
+> **As built (2026-11-13) — supersedes the code below where they differ:**
+> - Keith chose **not** to run the installer on his real machine until Phase 6.
+> - `.zshrc` location honors `ZDOTDIR` (`${ZDOTDIR:-$HOME}/.zshrc`) in both scripts.
+> - `install.sh` uses `if [ -f "$rc" ]; then ...; fi`, not `[ -f "$rc" ] && ...`: under `set -e`
+>   a false `&&` list as the loop's last command can make the script exit non-zero.
+> - `uninstall.sh` does **not** use `sed -i`. It strips the block with `awk` (also dropping the
+>   blank line `install.sh` adds before it, so install→uninstall is byte-for-byte) and writes back
+>   with `cat tmp > "$rc"`, so symlinked (dotfile-managed) rc files stay symlinks. `sed -i` would
+>   replace the symlink with a regular file and leave a stray blank line.
+> - **bats gotcha #2:** bash's `set -e` ignores negated commands, so `! grep ...` mid-test never
+>   fails. Use `refute_file_contains` from `tests/helpers.bash`.
+> - Extra tests beyond the table: `SHELL=bash`, ZDOTDIR, preserved content, run-from-other-dir,
+>   bash block works, spaces in `$HOME`, symlinked rc (install + uninstall), round trip, content
+>   after the block, non-empty config dir kept. Mutation-checked: reverting to `mv` or the plan's
+>   `sed -i` makes the round-trip/symlink tests fail.
+
 **Goal:** `./install.sh` and `./uninstall.sh`, idempotent, tested against a fake `$HOME`.
 
 New test file: `tests/install.bats`. Its setup:
