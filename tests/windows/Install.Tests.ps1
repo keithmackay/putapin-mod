@@ -38,9 +38,6 @@ Describe 'Windows installer' {
         $script:p2 = Join-Path (Join-Path $script:root 'p2') 'profile.ps1'
         $script:installed = Join-Path $script:inst 'putapin.ps1'
         New-Item -ItemType Directory -Force -Path $script:root | Out-Null
-        # One mock for every test; tests change the policy via $script:mockPolicy.
-        $script:mockPolicy = 'RemoteSigned'
-        Mock Get-ExecutionPolicy { $script:mockPolicy }
     }
 
     Describe 'ProfileText helpers' {
@@ -130,16 +127,22 @@ Describe 'Windows installer' {
         It 'warns (but changes nothing) when the execution policy blocks profiles' -ForEach @(
             @{ policy = 'Restricted' }, @{ policy = 'AllSigned' }, @{ policy = 'Undefined' }
         ) {
-            $script:mockPolicy = $policy
-            $out = & $script:InstallScript -InstallDir $script:inst -ProfilePaths $script:p1, $script:p2 3>&1 6>$null
-            $warn = @($out | Where-Object { $_ -is [Management.Automation.WarningRecord] })
-            $warn.Count | Should -Be 1
-            $warn[0].Message | Should -Match 'Set-ExecutionPolicy -Scope CurrentUser RemoteSigned'
+            # Literal mock body: no reliance on variable scoping inside mocks.
+            Mock Get-ExecutionPolicy -MockWith ([scriptblock]::Create("'$policy'"))
+            $warn = $null
+            & $script:InstallScript -InstallDir $script:inst -ProfilePaths $script:p1, $script:p2 `
+                -WarningAction Continue -WarningVariable warn 3>$null 6>$null
+            Should -Invoke Get-ExecutionPolicy -Times 1 -Exactly
+            @($warn).Count | Should -Be 1
+            "$($warn[0])" | Should -Match 'Set-ExecutionPolicy -Scope CurrentUser RemoteSigned'
         }
         It 'does not warn when the execution policy allows profiles' {
-            $out = & $script:InstallScript -InstallDir $script:inst -ProfilePaths $script:p1, $script:p2 3>&1 6>$null
-            @($out | Where-Object { $_ -is [Management.Automation.WarningRecord] }).Count | Should -Be 0
+            Mock Get-ExecutionPolicy -MockWith { 'RemoteSigned' }
+            $warn = $null
+            & $script:InstallScript -InstallDir $script:inst -ProfilePaths $script:p1, $script:p2 `
+                -WarningAction Continue -WarningVariable warn 3>$null 6>$null
             Should -Invoke Get-ExecutionPolicy -Times 1 -Exactly
+            @($warn).Count | Should -Be 0
         }
         It 'the profile block defines the claude wrapper' {
             Invoke-Install

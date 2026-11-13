@@ -1,6 +1,7 @@
 # Install putapin for Windows PowerShell 5.1 and PowerShell 7+.
 # Copies the mod to InstallDir and adds a source block to each profile.
 # Safe to re-run; re-running is also how you upgrade.
+[CmdletBinding()]
 param(
     [string]$InstallDir = (Join-Path $env:LOCALAPPDATA 'putapin'),
     # GetFolderPath follows OneDrive/folder redirection of Documents.

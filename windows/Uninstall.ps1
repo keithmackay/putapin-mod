@@ -1,4 +1,5 @@
 # Uninstall putapin: remove the profile blocks and the installed mod.
+[CmdletBinding()]
 param(
     [string]$InstallDir = (Join-Path $env:LOCALAPPDATA 'putapin'),
     # GetFolderPath follows OneDrive/folder redirection of Documents.
