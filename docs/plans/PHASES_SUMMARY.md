@@ -8,7 +8,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | Phase | Title | Status |
 |---|---|---|
 | 0 | Tooling & Test Harness | ✅ Complete |
-| 1 | Unix Core Helpers | 🟨 In Progress |
+| 1 | Unix Core Helpers | ✅ Complete |
 | 2 | Unix Dispatcher (`claude` function) | 🔲 Not Started |
 | 3 | Unix Installer / Uninstaller | 🔲 Not Started |
 | 4 | PowerShell Mod | 🔲 Not Started |
@@ -46,7 +46,7 @@ Tasks:
 Tasks:
 1. `_putapin_project_key` — non-alphanumeric → `-`
 2. `_putapin_has_session` — any `*.jsonl` in `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/<key>/` (uses `find`, never a glob)
-3. `_putapin_ask` — prompt loop; 0 yes / 1 no / 130 EOF; garbage re-prompts
+3. `_putapin_ask` — prompt loop (on stderr, whitespace trimmed); 0 yes / 1 no / 130 EOF; garbage re-prompts
 4. `_putapin_is_interactive` — `[ -t 0 ] && [ -t 1 ]` (test seam)
 
 **Deliverables:** helpers with full branch tests, shellcheck clean.

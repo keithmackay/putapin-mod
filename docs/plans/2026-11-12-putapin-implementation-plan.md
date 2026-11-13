@@ -108,7 +108,7 @@ claude [args...]
  ├─ not interactive (stdin/stdout TTY)? → command claude             (no prompt)
  ├─ no *.jsonl for key(pwd -P)?         → command claude             (no prompt)
  └─ prompt loop
-      ├─ "" | y | yes  (any case)      → command claude --continue
+      ├─ "" | y | yes  (any case, whitespace trimmed) → command claude --continue
       ├─ n  | no       (any case)      → command claude
       ├─ EOF                           → print newline, return 130, launch nothing
       ├─ Ctrl-C                        → shell aborts the function, launch nothing
@@ -338,6 +338,12 @@ If `apt`'s bats is < 1.5 on the runner (check the `bats --version` step), switch
 ---
 
 ## Phase 1 — Unix Core Helpers
+
+> **Decisions made at Phase 1 kickoff (Keith, 2026-11-12) — these supersede the code below:**
+> - The prompt is written to **stderr**, not stdout.
+> - Surrounding whitespace in answers is ignored (`" y "` = y, `"   "` = Enter). Implemented by
+>   using `read -r reply` with the default IFS (no `IFS=`), which trims in both bash and zsh.
+> - See `putapin.sh` and `tests/putapin.bats` for the as-built versions.
 
 **Goal:** the three pure-ish helpers, fully tested in bash and zsh. All code goes in `putapin.sh`;
 all tests in `tests/putapin.bats`. For every task: write tests → `bats tests` (fail) →
