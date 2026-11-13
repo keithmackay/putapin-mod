@@ -73,7 +73,7 @@ prompt_count() {
   type_input '\n'
   run_in_shell "_putapin_ask"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"$PROMPT"* ]]
+  assert_output_contains "$PROMPT"
 }
 
 @test "ask: y and Y mean yes" {
@@ -158,4 +158,84 @@ prompt_count() {
 @test "is_interactive: false without a TTY" {
   run_in_shell "_putapin_is_interactive"
   [ "$status" -eq 1 ]
+}
+
+# --- claude dispatcher: pass-through (no prompt) --------------------------
+
+@test "dispatch: args pass straight through, no prompt" {
+  make_session "$(workdir_key)"
+  run_interactive "claude -p 'hello world'"
+  [ "$status" -eq 0 ]
+  [ "$output" = "ARGS:-p hello world" ]
+}
+
+@test "dispatch: non-interactive runs plain claude, no prompt" {
+  make_session "$(workdir_key)"
+  run_in_shell "claude"            # real _putapin_is_interactive → false under bats
+  [ "$status" -eq 0 ]
+  [ "$output" = "ARGS:" ]
+}
+
+@test "dispatch: no prior session runs plain claude, no prompt" {
+  run_interactive "claude"
+  [ "$status" -eq 0 ]
+  [ "$output" = "ARGS:" ]
+}
+
+# --- claude dispatcher: prompting -----------------------------------------
+
+@test "dispatch: Enter resumes" {
+  make_session "$(workdir_key)"; type_input '\n'
+  run_interactive "claude"
+  [ "$status" -eq 0 ]
+  assert_output_contains "$PROMPT"
+  assert_output_ends_with "ARGS:--continue"
+}
+
+@test "dispatch: y resumes" {
+  make_session "$(workdir_key)"; type_input 'y\n'
+  run_interactive "claude"
+  assert_output_ends_with "ARGS:--continue"
+}
+
+@test "dispatch: n starts fresh" {
+  make_session "$(workdir_key)"; type_input 'n\n'
+  run_interactive "claude"
+  [ "$status" -eq 0 ]
+  assert_output_contains "$PROMPT"
+  assert_output_ends_with "ARGS:"
+  refute_output_contains "--continue"
+}
+
+@test "dispatch: EOF launches nothing and returns 130" {
+  make_session "$(workdir_key)"; type_input ''
+  run_interactive "claude"
+  [ "$status" -eq 130 ]
+  assert_output_contains "$PROMPT"
+  refute_output_contains "ARGS:"
+}
+
+@test "dispatch: exit status of real claude is propagated" {
+  mkdir -p "$BATS_TEST_TMPDIR/failstub"
+  printf '#!/bin/sh\nexit 7\n' > "$BATS_TEST_TMPDIR/failstub/claude"
+  chmod +x "$BATS_TEST_TMPDIR/failstub/claude"
+  make_session "$(workdir_key)"; type_input 'y\n'
+  run_interactive "PATH='$BATS_TEST_TMPDIR/failstub':\$PATH; claude"
+  [ "$status" -eq 7 ]
+}
+
+@test "dispatch: shell survives after claude exits (no exec)" {
+  make_session "$(workdir_key)"; type_input 'y\n'
+  run_interactive "claude; echo SHELL-STILL-HERE"
+  assert_output_contains "ARGS:--continue"
+  assert_output_ends_with "SHELL-STILL-HERE"
+}
+
+@test "dispatch: symlinked cwd resolves to physical path" {
+  ln -s "$WORKDIR" "$BATS_TEST_TMPDIR/link"
+  make_session "$(workdir_key)"      # key of the *physical* dir only
+  type_input 'y\n'
+  run_interactive "cd '$BATS_TEST_TMPDIR/link' && claude"
+  assert_output_contains "$PROMPT"
+  assert_output_ends_with "ARGS:--continue"
 }

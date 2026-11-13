@@ -41,3 +41,23 @@ run_in_shell() {
 run_interactive() {
   run_in_shell "_putapin_is_interactive() { return 0; }; $1"
 }
+
+# Assertions. Use these instead of bare [[ ]]: under bash 3.2 (macOS /bin/bash)
+# a failing [[ ]] that is not the last line of a test does NOT fail the test.
+assert_output_contains() {
+  [[ "$output" == *"$1"* ]] && return 0
+  printf 'expected output to contain: %s\nactual output: %s\n' "$1" "$output" >&2
+  return 1
+}
+
+refute_output_contains() {
+  [[ "$output" != *"$1"* ]] && return 0
+  printf 'expected output NOT to contain: %s\nactual output: %s\n' "$1" "$output" >&2
+  return 1
+}
+
+assert_output_ends_with() {
+  [[ "$output" == *"$1" ]] && return 0
+  printf 'expected output to end with: %s\nactual output: %s\n' "$1" "$output" >&2
+  return 1
+}

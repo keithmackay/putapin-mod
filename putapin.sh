@@ -40,3 +40,19 @@ _putapin_ask() {
 _putapin_is_interactive() {
   [ -t 0 ] && [ -t 1 ]
 }
+
+# The wrapper. Prompts only for a bare `claude` in a terminal when this
+# directory has a prior session; otherwise behaves exactly like the real CLI.
+# Uses `command claude`, never exec: exec would replace the user's shell.
+claude() {
+  if [ "$#" -gt 0 ] || ! _putapin_is_interactive || ! _putapin_has_session "$(pwd -P)"; then
+    command claude "$@"
+    return
+  fi
+  _putapin_ask
+  case $? in
+    0) command claude --continue ;;
+    1) command claude ;;
+    *) return 130 ;;
+  esac
+}
