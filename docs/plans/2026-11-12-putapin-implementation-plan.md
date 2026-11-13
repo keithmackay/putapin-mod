@@ -72,7 +72,7 @@ Out of scope (YAGNI): fish, cmd.exe, timeouts/auto-answer, session previews, con
 |---|---|---|---|
 | bats-core ≥ 1.5 | Bash test framework (`@test` blocks, `run`, `$status`, `$output`) | `brew install bats-core` | https://bats-core.readthedocs.io |
 | shellcheck | Shell linter | `brew install shellcheck` | https://www.shellcheck.net |
-| PowerShell 7 | To run Pester locally on a Mac | `brew install --cask powershell` | https://learn.microsoft.com/powershell |
+| PowerShell 7 | To run Pester locally on a Mac | `brew install --formula powershell` | https://learn.microsoft.com/powershell |
 | Pester 5 | PowerShell test framework (`Describe/It/Should/Mock`) | `pwsh -c 'Install-Module Pester -MinimumVersion 5.5 -Scope CurrentUser -Force'` | https://pester.dev |
 
 ### Testing approach
@@ -139,7 +139,7 @@ so every later phase is pure red/green.
 
 ```sh
 brew install bats-core shellcheck
-brew install --cask powershell
+brew install --formula powershell
 pwsh -NoProfile -c 'Install-Module Pester -MinimumVersion 5.5 -Scope CurrentUser -Force -SkipPublisherCheck'
 bats --version          # expect 1.5+
 shellcheck --version

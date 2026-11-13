@@ -1,0 +1,39 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        shell: [bash, zsh]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y bats zsh shellcheck
+      - name: Install tools (macOS)
+        if: runner.os == 'macOS'
+        run: brew install bats-core shellcheck
+      - run: bats --version
+      - name: Lint
+        run: shellcheck tests/stubs/claude $(ls putapin.sh install.sh uninstall.sh 2>/dev/null)
+      - run: bats tests
+        env:
+          TEST_SHELL: ${{ matrix.shell }}
+
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        ps: [pwsh, powershell]
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: ${{ matrix.ps }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: Install-Module Pester -MinimumVersion 5.5 -Scope CurrentUser -Force -SkipPublisherCheck
+      - run: Invoke-Pester tests/windows -CI -Output Detailed
