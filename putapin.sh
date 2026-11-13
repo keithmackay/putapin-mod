@@ -34,3 +34,9 @@ _putapin_ask() {
     esac
   done
 }
+
+# True when both stdin and stdout are terminals. Kept separate so tests can
+# override it (bats never has a TTY).
+_putapin_is_interactive() {
+  [ -t 0 ] && [ -t 1 ]
+}

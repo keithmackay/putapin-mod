@@ -150,3 +150,12 @@ prompt_count() {
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
+
+# --- _putapin_is_interactive ----------------------------------------------
+# bats never has a TTY, so only the false branch can be automated here;
+# the true branch is covered by the manual checklist (plan Phase 6).
+
+@test "is_interactive: false without a TTY" {
+  run_in_shell "_putapin_is_interactive"
+  [ "$status" -eq 1 ]
+}
