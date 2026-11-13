@@ -8,7 +8,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | Phase | Title | Status |
 |---|---|---|
 | 0 | Tooling & Test Harness | ✅ Complete |
-| 1 | Unix Core Helpers | 🔲 Not Started |
+| 1 | Unix Core Helpers | 🟨 In Progress |
 | 2 | Unix Dispatcher (`claude` function) | 🔲 Not Started |
 | 3 | Unix Installer / Uninstaller | 🔲 Not Started |
 | 4 | PowerShell Mod | 🔲 Not Started |
