@@ -10,7 +10,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | 0 | Tooling & Test Harness | ✅ Complete |
 | 1 | Unix Core Helpers | ✅ Complete |
 | 2 | Unix Dispatcher (`claude` function) | ✅ Complete |
-| 3 | Unix Installer / Uninstaller | 🔲 Not Started |
+| 3 | Unix Installer / Uninstaller | 🟨 In Progress |
 | 4 | PowerShell Mod | 🔲 Not Started |
 | 5 | Windows Installer / Uninstaller | 🔲 Not Started |
 | 6 | Docs, Manual Verification, Release | 🔲 Not Started |
