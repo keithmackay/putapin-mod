@@ -59,3 +59,94 @@ setup() { setup_env; }
   run_in_shell "unset CLAUDE_CONFIG_DIR; HOME='$fakehome'; _putapin_has_session '$WORKDIR'"
   [ "$status" -eq 0 ]
 }
+
+# --- _putapin_ask ---------------------------------------------------------
+# Returns 0 = resume, 1 = fresh, 130 = aborted (EOF).
+
+PROMPT='Resume prior session? (Y/n) '
+
+prompt_count() {
+  grep -o 'Resume prior session' <<<"$output" | wc -l | tr -d ' '
+}
+
+@test "ask: Enter means yes" {
+  type_input '\n'
+  run_in_shell "_putapin_ask"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"$PROMPT"* ]]
+}
+
+@test "ask: y and Y mean yes" {
+  for answer in y Y; do
+    type_input "$answer\n"
+    run_in_shell "_putapin_ask"
+    [ "$status" -eq 0 ]
+  done
+}
+
+@test "ask: yes in any case means yes" {
+  for answer in yes YES YeS; do
+    type_input "$answer\n"
+    run_in_shell "_putapin_ask"
+    [ "$status" -eq 0 ]
+  done
+}
+
+@test "ask: n and N mean no" {
+  for answer in n N; do
+    type_input "$answer\n"
+    run_in_shell "_putapin_ask"
+    [ "$status" -eq 1 ]
+  done
+}
+
+@test "ask: no in any case means no" {
+  for answer in no NO No; do
+    type_input "$answer\n"
+    run_in_shell "_putapin_ask"
+    [ "$status" -eq 1 ]
+  done
+}
+
+@test "ask: surrounding whitespace is ignored" {
+  type_input '  y \t\n'
+  run_in_shell "_putapin_ask"
+  [ "$status" -eq 0 ]
+  type_input ' n  \n'
+  run_in_shell "_putapin_ask"
+  [ "$status" -eq 1 ]
+}
+
+@test "ask: whitespace-only answer means yes (default)" {
+  type_input '   \n'
+  run_in_shell "_putapin_ask"
+  [ "$status" -eq 0 ]
+  [ "$(prompt_count)" -eq 1 ]
+}
+
+@test "ask: garbage re-prompts until a valid answer" {
+  type_input 'maybe\nyess\nn\n'
+  run_in_shell "_putapin_ask"
+  [ "$status" -eq 1 ]
+  [ "$(prompt_count)" -eq 3 ]
+}
+
+@test "ask: EOF aborts" {
+  type_input ''
+  run_in_shell "_putapin_ask"
+  [ "$status" -eq 130 ]
+}
+
+@test "ask: EOF after garbage aborts" {
+  type_input 'x\n'
+  run_in_shell "_putapin_ask"
+  [ "$status" -eq 130 ]
+  [ "$(prompt_count)" -eq 2 ]
+}
+
+@test "ask: prompt goes to stderr, not stdout" {
+  type_input 'y\n'
+  run_in_shell "_putapin_ask 2>/dev/null"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
