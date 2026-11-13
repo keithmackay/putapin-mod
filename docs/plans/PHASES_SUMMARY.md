@@ -11,7 +11,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | 1 | Unix Core Helpers | ✅ Complete |
 | 2 | Unix Dispatcher (`claude` function) | ✅ Complete |
 | 3 | Unix Installer / Uninstaller | ✅ Complete |
-| 4 | PowerShell Mod | 🟨 In Progress |
+| 4 | PowerShell Mod | ✅ Complete |
 | 5 | Windows Installer / Uninstaller | 🔲 Not Started |
 | 6 | Docs, Manual Verification, Release | 🔲 Not Started |
 
@@ -22,7 +22,7 @@ under bash and zsh) instead of 80% line coverage. Keith signed off.
 
 **Phase 0 notes:** CI installs Pester 6.x (`-MinimumVersion 5.5` resolves to latest). The Homebrew
 `powershell` formula failed to install (flaky .NET bottle download), so local `pwsh` uses Microsoft's
-official osx-arm64 tarball instead; the local install is still pending and is only needed from Phase 4.
+official osx-arm64 tarball instead; the local install is still pending. Phase 4 red/green ran on Windows CI instead (40/40 on PS 7 and 5.1).
 
 ---
 
@@ -81,7 +81,8 @@ Tasks:
 2. `Test-PutapinSession` (honors `CLAUDE_CONFIG_DIR`)
 3. `Read-PutapinLine` (seam) + `Read-PutapinAnswer` → yes/no/abort
 4. `Test-PutapinInteractive`, `Get-PutapinRealClaude` (Application/ExternalScript only)
-5. `claude` function (uses the FileSystem provider path)
+5. `claude` function (uses the FileSystem provider path; abort sets exit 130)
+6. Parity guard: existing alias / third-party function → `Write-Warning` and skip; answers whitespace-trimmed
 
 **Deliverables:** PowerShell mod plus Pester suite, green in CI on PS 5.1 and PS 7.
 

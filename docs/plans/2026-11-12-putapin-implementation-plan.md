@@ -766,6 +766,26 @@ Commit `Add Unix uninstaller`. Add `shellcheck install.sh uninstall.sh` to your 
 
 ## Phase 4 — PowerShell Mod
 
+> **As built (2026-11-13) — supersedes the code below where they differ:**
+> - Keith chose **full parity** with zsh/bash: whitespace-trimmed answers (`$reply.Trim()`), and an
+>   existing `claude` **alias or third-party function** is left alone with `Write-Warning`
+>   (ownership detected from the function's ScriptBlock text, so re-dot-sourcing is silent).
+>   In PowerShell an alias outranks a function, so without the guard ours would silently never run.
+> - Abort (EOF) sets `$global:LASTEXITCODE = 130`, matching the Unix return code.
+> - `Get-PutapinHome` seam added: `$HOME` is read-only in PowerShell, so tests mock this instead.
+> - `Read-PutapinLine` is `[CmdletBinding()]` and is tested for real via `[Console]::SetIn(StringReader)`
+>   (prompt captured from the Information stream; EOF → `$null`).
+> - `claude` must stay a **simple** function: an advanced function would treat `-p` as an
+>   abbreviation of the common parameter `-PipelineVariable`. So it has no `-ErrorAction`.
+> - `windows/putapin.ps1` and its tests are **ASCII-only**: PS 5.1 reads BOM-less scripts as
+>   Windows-1252 (the non-ASCII key test builds `é` with `[char]0xE9`).
+> - **Pester gotchas:** `$TestDrive` is shared by every `It` in a `Describe` (use unique
+>   subdirectories per test); tests run with `$ErrorActionPreference = 'Stop'`, so set `Continue`
+>   locally when testing non-terminating `Write-Error`.
+> - Guard tests run in a child process (`(Get-Process -Id $PID).Path -NoProfile -Command ...`).
+> - Red/green ran on CI (branch `phase-4-powershell`, fast-forwarded to main) because local pwsh
+>   could not be downloaded over the flaky network. CI: 40/40 on PS 7.x and Windows PowerShell 5.1.
+
 **Goal:** `windows/putapin.ps1` with the same behavior, tested with Pester (locally on macOS
 pwsh; in CI on Windows PS 5.1 + 7). Keep everything PS 5.1-compatible: no `??`, no ternary,
 no `&&`, no `-AsHashtable` etc.
