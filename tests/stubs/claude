@@ -1,0 +1,3 @@
+#!/bin/sh
+# Test double for the real Claude Code CLI: echoes what it was called with.
+printf 'ARGS:%s\n' "$*"
