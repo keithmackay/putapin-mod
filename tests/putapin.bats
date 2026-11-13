@@ -239,3 +239,42 @@ prompt_count() {
   assert_output_contains "$PROMPT"
   assert_output_ends_with "ARGS:--continue"
 }
+
+# --- guard: never clobber someone else's alias or function ------------------
+# Alias expansion is on (bash: expand_aliases; zsh: always) to reproduce an
+# interactive shell, where aliases are expanded while the file is *parsed*.
+
+ALIAS_ON='shopt -s expand_aliases 2>/dev/null || true'
+
+@test "guard: existing alias is left alone, with a warning" {
+  run_raw "$ALIAS_ON; alias claude='echo ALIASED'; . '$PUTAPIN'; echo SOURCED-OK; eval claude"
+  [ "$status" -eq 0 ]
+  assert_output_contains "putapin: 'claude' is already an alias; not installing the resume prompt."
+  assert_output_contains "SOURCED-OK"
+  assert_output_ends_with "ALIASED"
+}
+
+@test "guard: existing function is left alone, with a warning" {
+  run_raw "claude() { echo OTHER-WRAPPER; }; . '$PUTAPIN'; echo SOURCED-OK; claude"
+  [ "$status" -eq 0 ]
+  assert_output_contains "putapin: 'claude' is already a function; not installing the resume prompt."
+  assert_output_contains "SOURCED-OK"
+  assert_output_ends_with "OTHER-WRAPPER"
+}
+
+@test "guard: wrapper installed after putapin survives a re-source" {
+  run_in_shell "claude() { echo OTHER-WRAPPER; }; . '$PUTAPIN'; claude"
+  [ "$status" -eq 0 ]
+  assert_output_contains "putapin: 'claude' is already a function"
+  assert_output_ends_with "OTHER-WRAPPER"
+}
+
+@test "guard: re-sourcing putapin is silent and still prompts" {
+  make_session "$(workdir_key)"; type_input 'y\n'
+  # The TTY override must come after re-sourcing, which restores the real one.
+  run_in_shell ". '$PUTAPIN'; . '$PUTAPIN'; _putapin_is_interactive() { return 0; }; claude"
+  [ "$status" -eq 0 ]
+  refute_output_contains "putapin:"
+  assert_output_contains "$PROMPT"
+  assert_output_ends_with "ARGS:--continue"
+}

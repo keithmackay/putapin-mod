@@ -37,6 +37,13 @@ run_in_shell() {
   run "$TEST_SHELL" "${flags[@]}" -c "cd '$WORKDIR' && . '$PUTAPIN' && $1" < "$STDIN_FILE"
 }
 
+# run_raw <code>: like run_in_shell, but does NOT source the mod first.
+run_raw() {
+  local flags=()
+  [ "$TEST_SHELL" = zsh ] && flags=(-f)
+  run "$TEST_SHELL" "${flags[@]}" -c "cd '$WORKDIR' && $1" < "$STDIN_FILE"
+}
+
 # run_interactive <code>: same, but pretend we are on a TTY.
 run_interactive() {
   run_in_shell "_putapin_is_interactive() { return 0; }; $1"

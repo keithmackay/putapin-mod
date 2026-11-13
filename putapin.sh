@@ -41,18 +41,54 @@ _putapin_is_interactive() {
   [ -t 0 ] && [ -t 1 ]
 }
 
+# What `claude` currently is in this shell: alias, function, file/command, or empty.
+_putapin_claude_kind() {
+  if [ -n "${ZSH_VERSION:-}" ]; then
+    whence -w claude 2>/dev/null | sed 's/^claude: //'
+  else
+    type -t claude 2>/dev/null
+  fi
+}
+
+# True if the current `claude` function is ours (from an earlier source of
+# this file). Checks the body, so a wrapper defined after us is not mistaken
+# for ours. typeset -f works in both bash and zsh.
+_putapin_owns_claude() {
+  typeset -f claude 2>/dev/null | grep -q '_putapin_ask'
+}
+
+# Never clobber someone else's alias or function; redefining our own is fine.
+_putapin_install=1
+case "$(_putapin_claude_kind)" in
+  alias)
+    _putapin_install=0
+    printf "putapin: 'claude' is already an alias; not installing the resume prompt.\n" >&2
+    ;;
+  function)
+    if ! _putapin_owns_claude; then
+      _putapin_install=0
+      printf "putapin: 'claude' is already a function; not installing the resume prompt.\n" >&2
+    fi
+    ;;
+esac
+
 # The wrapper. Prompts only for a bare `claude` in a terminal when this
 # directory has a prior session; otherwise behaves exactly like the real CLI.
 # Uses `command claude`, never exec: exec would replace the user's shell.
-claude() {
-  if [ "$#" -gt 0 ] || ! _putapin_is_interactive || ! _putapin_has_session "$(pwd -P)"; then
-    command claude "$@"
-    return
-  fi
-  _putapin_ask
-  case $? in
-    0) command claude --continue ;;
-    1) command claude ;;
-    *) return 130 ;;
-  esac
-}
+# Defined with the `function` keyword because `claude()` would be
+# alias-expanded at parse time when an alias exists, even in an unrun branch.
+if [ "$_putapin_install" = 1 ]; then
+  function claude {
+    if [ "$#" -gt 0 ] || ! _putapin_is_interactive || ! _putapin_has_session "$(pwd -P)"; then
+      command claude "$@"
+      return
+    fi
+    _putapin_ask
+    case $? in
+      0) command claude --continue ;;
+      1) command claude ;;
+      *) return 130 ;;
+    esac
+  }
+fi
+unset _putapin_install
