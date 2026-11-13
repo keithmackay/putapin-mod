@@ -11,7 +11,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | 1 | Unix Core Helpers | ✅ Complete |
 | 2 | Unix Dispatcher (`claude` function) | ✅ Complete |
 | 3 | Unix Installer / Uninstaller | ✅ Complete |
-| 4 | PowerShell Mod | 🔲 Not Started |
+| 4 | PowerShell Mod | 🟨 In Progress |
 | 5 | Windows Installer / Uninstaller | 🔲 Not Started |
 | 6 | Docs, Manual Verification, Release | 🔲 Not Started |
 
