@@ -23,6 +23,8 @@ Prompt checks ran in a real pseudo-terminal (`script -q /dev/null ...`) with tim
 | – | cwd via wrong-case path (`~/projects/...`) → prompt appears | ✅ | — | real store; `pwd -P` normalizes case |
 | – | Full real `~/.zshrc` loads cleanly; `claude` is a function; `cc` alias untouched | ✅ | — | `zsh -i` |
 
+| – | Keith's `cc` alias, changed (at Keith's request) to `alias cc='PUTAPIN_FLAGS=--dangerously-skip-permissions claude'`: `y` → `--dangerously-skip-permissions --continue`; `n` → `--dangerously-skip-permissions`; `cc -p hi` → no prompt, flag kept; `PUTAPIN_FLAGS` unset afterwards | ✅ | — | stub, full real `~/.zshrc` |
+
 ### Left for Keith (need the real interactive TUI)
 
 Open a **new** terminal (so `~/.zshrc` loads putapin), then:
