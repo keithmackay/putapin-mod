@@ -12,6 +12,9 @@ Facts the mod depends on. Re-verify after major Claude Code upgrades (plan Task 
 - The key uses the **physical** path: `cd /tmp` → `pwd -P` is `/private/tmp`, and
   `~/.claude/projects` contains 8 `-private-tmp-*` folders and 0 `-tmp-*` folders.
   The wrapper must use `pwd -P`, not `$PWD`.
+- On macOS's case-insensitive filesystem, `cd ~/projects/x` (wrong case) still works and `$PWD`
+  keeps the typed case, but Claude Code's key uses the on-disk case (`-Users-...-Projects-x`).
+  `pwd -P` returns the on-disk case too (verified 2026-11-14), so the wrapper finds the session.
 - Windows key encoding (`C:\x\y` → `C--x-y`) is **not yet verified** — see plan Task 5.4 (Keith).
   To verify on Windows with Claude Code installed:
   ```powershell
