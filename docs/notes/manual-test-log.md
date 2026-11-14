@@ -25,20 +25,20 @@ Prompt checks ran in a real pseudo-terminal (`script -q /dev/null ...`) with tim
 
 | – | Keith's `cc` alias, changed (at Keith's request) to `alias cc='PUTAPIN_FLAGS=--dangerously-skip-permissions claude'`: `y` → `--dangerously-skip-permissions --continue`; `n` → `--dangerously-skip-permissions`; `cc -p hi` → no prompt, flag kept; `PUTAPIN_FLAGS` unset afterwards | ✅ | — | stub, full real `~/.zshrc` |
 
-### Left for Keith (need the real interactive TUI)
+### Interactive TUI checks — run by Keith, 2026-11-14: all passed
 
 Open a **new** terminal (so `~/.zshrc` loads putapin), then:
 
 | # | Step | Expected | Result |
 |---|---|---|---|
-| 1 | `mkdir ~/putapin-try && cd ~/putapin-try && claude` | no prompt; fresh session | |
-| 2 | Type `remember the word PINEAPPLE`, then `/exit` | back at the shell | |
-| 3 | `claude`, press **Enter** at `Resume prior session? (Y/n)`; ask `what word?` | earlier conversation visible; answers PINEAPPLE | |
-| 4 | `/exit`, then `claude`, answer `n` | fresh session, no earlier messages | |
-| 5 | `/exit`, then `claude`, answer `maybe`, then `y` | asked again; then resumed | |
-| 6 | `claude`, press **Ctrl-C** at the prompt | back at the shell; Claude did not start; tab still open | |
-| 9 | After any resumed session, `/exit` | same shell, same tab (proves no `exec`) | |
-| bash | `bash`, then `. ~/.config/putapin/putapin.sh`, then repeat step 3 | same as zsh | |
+| 1 | `mkdir ~/putapin-try && cd ~/putapin-try && claude` | no prompt; fresh session | ✅ |
+| 2 | Type `remember the word PINEAPPLE`, then `/exit` | back at the shell | ✅ |
+| 3 | `claude`, press **Enter** at `Resume prior session? (Y/n)`; ask `what word?` | earlier conversation visible; answers PINEAPPLE | ✅ |
+| 4 | `/exit`, then `claude`, answer `n` | fresh session, no earlier messages | ✅ |
+| 5 | `/exit`, then `claude`, answer `maybe`, then `y` | asked again; then resumed | ✅ |
+| 6 | `claude`, press **Ctrl-C** at the prompt | back at the shell; Claude did not start; tab still open | ✅ |
+| 9 | After any resumed session, `/exit` | same shell, same tab (proves no `exec`) | ✅ |
+| bash | `bash`, then `. ~/.config/putapin/putapin.sh`, then repeat step 3 | same as zsh | ✅ |
 
 Clean up afterwards with `rm -r ~/putapin-try` if you like.
 
