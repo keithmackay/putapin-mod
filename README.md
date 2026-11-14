@@ -68,6 +68,33 @@ Just run `claude`. You'll see the prompt only when **all** of these are true:
 
 Otherwise the real `claude` starts right away, unchanged.
 
+### Extra flags (`PUTAPIN_FLAGS`)
+
+To always start Claude with some flags *and* keep the prompt, put them in `PUTAPIN_FLAGS`. They
+are added to the front of every launch: resume, fresh, or a normal `claude ...` command. Quoting
+works as on a command line, e.g. `--model opus --append-system-prompt 'be brief'`.
+
+A handy shortcut in zsh/bash (put it in `~/.zshrc` or `~/.bashrc`):
+
+```sh
+alias cc='PUTAPIN_FLAGS=--dangerously-skip-permissions claude'
+```
+
+`cc` then prompts like `claude` and runs `claude --dangerously-skip-permissions [--continue]`.
+An alias such as `alias cc='claude --dangerously-skip-permissions'` would *not* prompt, because
+any arguments to `claude` skip the prompt.
+
+In PowerShell (put it in your profile, below the putapin block):
+
+```powershell
+function cc {
+    $env:PUTAPIN_FLAGS = '--dangerously-skip-permissions'
+    try { claude @args } finally { Remove-Item Env:PUTAPIN_FLAGS -ErrorAction SilentlyContinue }
+}
+```
+
+### Bypassing the mod
+
 To skip the mod once, bypass the wrapper:
 
 | Shell | Command |

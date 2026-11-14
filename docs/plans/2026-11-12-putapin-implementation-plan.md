@@ -1044,6 +1044,17 @@ test, and record the finding in `docs/notes/claude-code-facts.md`.
 
 ## Phase 6 — Docs, Manual Verification, Release
 
+> **As built (2026-11-14):**
+> - Keith approved a real `./install.sh` on his Mac. The automatable checklist items ran in a
+>   pseudo-terminal (`script -q /dev/null`, timed input, stub on `PATH` so the TUI never opens);
+>   results and Keith's remaining interactive steps are in `docs/notes/manual-test-log.md`.
+> - Found during the real install: Keith's `alias cc='claude --dangerously-skip-permissions'`
+>   would never prompt (arguments → pass-through). Keith chose a new **`PUTAPIN_FLAGS`** option,
+>   prepended to every launch. zsh/bash split it with `eval "set -- $PUTAPIN_FLAGS \"\$@\""` (shell
+>   quoting); PowerShell uses the PS parser, falling back to whitespace splitting. An env-prefix
+>   alias (`alias cc='PUTAPIN_FLAGS=... claude'`) keeps the prompt and doesn't leak the variable.
+> - Keith decided v0.1.0 is **not tagged until** Task 5.4 and the Windows manual checks are done.
+
 ### Task 6.1 — README
 
 Fill in `README.md`:
