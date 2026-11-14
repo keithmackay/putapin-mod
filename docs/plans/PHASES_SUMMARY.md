@@ -13,7 +13,7 @@ The detailed plan is authoritative; this file must stay in sync with it.
 | 3 | Unix Installer / Uninstaller | ✅ Complete |
 | 4 | PowerShell Mod | ✅ Complete |
 | 5 | Windows Installer / Uninstaller | 🟨 In Progress |
-| 6 | Docs, Manual Verification, Release | 🔲 Not Started |
+| 6 | Docs, Manual Verification, Release | 🟨 In Progress |
 
 Legend: 🔲 Not Started · 🟨 In Progress · ✅ Complete
 
