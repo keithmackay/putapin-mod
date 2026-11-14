@@ -73,7 +73,7 @@ To skip the mod once, bypass the wrapper:
 | Shell | Command |
 |---|---|
 | zsh / bash | `command claude` or `\claude` |
-| PowerShell | `& (Get-Command claude -CommandType Application, ExternalScript)` |
+| PowerShell | `& (Get-Command claude -CommandType Application, ExternalScript \| Select-Object -First 1)` |
 
 If you already have your own `claude` alias or function, putapin leaves it alone and prints a
 warning when your shell starts.
