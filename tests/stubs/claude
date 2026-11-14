@@ -1,3 +1,10 @@
 #!/bin/sh
 # Test double for the real Claude Code CLI: echoes what it was called with.
-printf 'ARGS:%s\n' "$*"
+# PUTAPIN_STUB_ARGV=1 prints each argument in [brackets] to show word boundaries.
+if [ -n "${PUTAPIN_STUB_ARGV:-}" ]; then
+  printf 'ARGV:'
+  for a in "$@"; do printf '[%s]' "$a"; done
+  printf '\n'
+else
+  printf 'ARGS:%s\n' "$*"
+fi

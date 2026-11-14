@@ -151,7 +151,8 @@ Describe 'claude wrapper' {
     BeforeAll {
         $script:stub = Join-Path $TestDrive 'claude.ps1'
         Set-Content -LiteralPath $script:stub -Value @'
-"ARGS:$($args -join ' ')"
+if ($env:PUTAPIN_STUB_ARGV) { 'ARGV:' + (($args | ForEach-Object { "[$_]" }) -join '') }
+else { "ARGS:$($args -join ' ')" }
 exit $(if ($env:PUTAPIN_STUB_EXIT) { [int]$env:PUTAPIN_STUB_EXIT } else { 0 })
 '@
     }
@@ -161,6 +162,12 @@ exit $(if ($env:PUTAPIN_STUB_EXIT) { [int]$env:PUTAPIN_STUB_EXIT } else { 0 })
         Mock Test-PutapinSession { $true }
         Mock Read-PutapinAnswer { 'yes' }
         $env:PUTAPIN_STUB_EXIT = $null
+        $env:PUTAPIN_STUB_ARGV = $null
+        $env:PUTAPIN_FLAGS = $null
+    }
+    AfterAll {
+        $env:PUTAPIN_STUB_ARGV = $null
+        $env:PUTAPIN_FLAGS = $null
     }
 
     It 'passes arguments straight through without prompting' {
@@ -204,6 +211,39 @@ exit $(if ($env:PUTAPIN_STUB_EXIT) { [int]$env:PUTAPIN_STUB_EXIT } else { 0 })
         } finally {
             Pop-Location
         }
+    }
+    It 'prepends PUTAPIN_FLAGS when resuming' {
+        $env:PUTAPIN_FLAGS = '--x'
+        claude | Should -BeExactly 'ARGS:--x --continue'
+    }
+    It 'prepends PUTAPIN_FLAGS when starting fresh' {
+        $env:PUTAPIN_FLAGS = '--x'
+        Mock Read-PutapinAnswer { 'no' }
+        claude | Should -BeExactly 'ARGS:--x'
+    }
+    It 'prepends PUTAPIN_FLAGS when passing arguments through' {
+        $env:PUTAPIN_FLAGS = '--x'
+        claude -p hi | Should -BeExactly 'ARGS:--x -p hi'
+    }
+    It 'prepends PUTAPIN_FLAGS when not interactive' {
+        $env:PUTAPIN_FLAGS = '--x'
+        Mock Test-PutapinInteractive { $false }
+        claude | Should -BeExactly 'ARGS:--x'
+    }
+    It 'splits PUTAPIN_FLAGS like command arguments, respecting quotes' {
+        $env:PUTAPIN_STUB_ARGV = '1'
+        $env:PUTAPIN_FLAGS = "--model opus --append-system-prompt 'be brief' --dangerously-skip-permissions"
+        claude | Should -BeExactly 'ARGV:[--model][opus][--append-system-prompt][be brief][--dangerously-skip-permissions][--continue]'
+    }
+    It 'falls back to whitespace splitting when PUTAPIN_FLAGS does not parse' {
+        $env:PUTAPIN_STUB_ARGV = '1'
+        $env:PUTAPIN_FLAGS = "--x 'unclosed"
+        claude | Should -BeExactly "ARGV:[--x]['unclosed][--continue]"
+    }
+    It 'adds nothing for an empty or blank PUTAPIN_FLAGS' {
+        $env:PUTAPIN_STUB_ARGV = '1'
+        $env:PUTAPIN_FLAGS = '   '
+        claude -p hi | Should -BeExactly 'ARGV:[-p][hi]'
     }
     It 'writes a putapin error when the real claude is missing' {
         Mock Get-PutapinRealClaude { $null }

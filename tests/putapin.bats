@@ -278,3 +278,56 @@ ALIAS_ON='shopt -s expand_aliases 2>/dev/null || true'
   assert_output_contains "$PROMPT"
   assert_output_ends_with "ARGS:--continue"
 }
+
+# --- PUTAPIN_FLAGS: extra flags prepended to every launch ------------------
+
+@test "flags: prepended when resuming" {
+  make_session "$(workdir_key)"; type_input 'y\n'
+  run_interactive "PUTAPIN_FLAGS=--x claude"
+  assert_output_ends_with "ARGS:--x --continue"
+}
+
+@test "flags: prepended when starting fresh" {
+  make_session "$(workdir_key)"; type_input 'n\n'
+  run_interactive "PUTAPIN_FLAGS=--x claude"
+  assert_output_ends_with "ARGS:--x"
+}
+
+@test "flags: prepended when passing arguments through" {
+  run_interactive "PUTAPIN_FLAGS=--x claude -p hi"
+  [ "$output" = "ARGS:--x -p hi" ]
+}
+
+@test "flags: prepended when not interactive" {
+  make_session "$(workdir_key)"
+  run_in_shell "PUTAPIN_FLAGS=--x claude"
+  [ "$output" = "ARGS:--x" ]
+}
+
+@test "flags: split like shell words, quotes respected" {
+  make_session "$(workdir_key)"; type_input 'y\n'
+  run_interactive "export PUTAPIN_STUB_ARGV=1; PUTAPIN_FLAGS=\"--model opus --append-system-prompt 'be brief'\" claude"
+  assert_output_ends_with "ARGV:[--model][opus][--append-system-prompt][be brief][--continue]"
+}
+
+@test "flags: user arguments keep their word boundaries" {
+  run_interactive "export PUTAPIN_STUB_ARGV=1; PUTAPIN_FLAGS=--x claude -p 'two words'"
+  [ "$output" = "ARGV:[--x][-p][two words]" ]
+}
+
+@test "flags: empty value adds nothing" {
+  run_interactive "export PUTAPIN_STUB_ARGV=1; PUTAPIN_FLAGS= claude -p hi"
+  [ "$output" = "ARGV:[-p][hi]" ]
+}
+
+@test "flags: a prefix assignment does not linger in the shell" {
+  run_interactive "PUTAPIN_FLAGS=--x claude -p hi; echo \"after=\${PUTAPIN_FLAGS-unset}\""
+  assert_output_ends_with "after=unset"
+}
+
+@test "flags: works through an alias like cc" {
+  make_session "$(workdir_key)"; type_input 'y\n'
+  run_interactive "$ALIAS_ON; alias cc='PUTAPIN_FLAGS=--dangerously-skip-permissions claude'; eval cc"
+  assert_output_contains "$PROMPT"
+  assert_output_ends_with "ARGS:--dangerously-skip-permissions --continue"
+}

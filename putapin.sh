@@ -41,6 +41,16 @@ _putapin_is_interactive() {
   [ -t 0 ] && [ -t 1 ]
 }
 
+# Run the real claude with $PUTAPIN_FLAGS (if set) in front of the arguments.
+# The flags are split like shell words, so quoting works:
+#   PUTAPIN_FLAGS="--model opus --append-system-prompt 'be brief'"
+_putapin_run() {
+  if [ -n "${PUTAPIN_FLAGS:-}" ]; then
+    eval "set -- $PUTAPIN_FLAGS \"\$@\""
+  fi
+  command claude "$@"
+}
+
 # What `claude` currently is in this shell: alias, function, file/command, or empty.
 _putapin_claude_kind() {
   if [ -n "${ZSH_VERSION:-}" ]; then
@@ -74,19 +84,19 @@ esac
 
 # The wrapper. Prompts only for a bare `claude` in a terminal when this
 # directory has a prior session; otherwise behaves exactly like the real CLI.
-# Uses `command claude`, never exec: exec would replace the user's shell.
+# Launches via `command claude`, never exec: exec would replace the user's shell.
 # Defined with the `function` keyword because `claude()` would be
 # alias-expanded at parse time when an alias exists, even in an unrun branch.
 if [ "$_putapin_install" = 1 ]; then
   function claude {
     if [ "$#" -gt 0 ] || ! _putapin_is_interactive || ! _putapin_has_session "$(pwd -P)"; then
-      command claude "$@"
+      _putapin_run "$@"
       return
     fi
     _putapin_ask
     case $? in
-      0) command claude --continue ;;
-      1) command claude ;;
+      0) _putapin_run --continue ;;
+      1) _putapin_run ;;
       *) return 130 ;;
     esac
   }
