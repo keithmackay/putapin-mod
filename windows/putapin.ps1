@@ -55,6 +55,28 @@ function Get-PutapinRealClaude {
         Select-Object -First 1
 }
 
+# The extra flags from $env:PUTAPIN_FLAGS, split like command arguments (quotes
+# respected) using the PowerShell parser; falls back to whitespace splitting if
+# the value does not parse. Returns an empty array when unset or blank.
+function Get-PutapinFlags {
+    $raw = $env:PUTAPIN_FLAGS
+    if (-not $raw -or -not $raw.Trim()) { return @() }
+    $tokens = $null
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseInput("x $raw", [ref]$tokens, [ref]$errors)
+    if ($errors.Count -gt 0) { return @($raw.Trim() -split '\s+') }
+    $elements = $ast.EndBlock.Statements[0].PipelineElements[0].CommandElements | Select-Object -Skip 1
+    $flags = foreach ($e in $elements) {
+        if ($e -is [Management.Automation.Language.StringConstantExpressionAst] -or
+            $e -is [Management.Automation.Language.ExpandableStringExpressionAst]) {
+            $e.Value
+        } else {
+            $e.Extent.Text
+        }
+    }
+    @($flags)
+}
+
 # Never clobber someone else's alias or function; redefining our own is fine.
 # (In PowerShell an alias outranks a function, so ours would never run anyway.)
 $putapinInstall = $true
@@ -69,7 +91,8 @@ if ($putapinExisting -and $putapinExisting.CommandType -eq 'Alias') {
 }
 
 # The wrapper. Prompts only for a bare `claude` in a console when this directory
-# has a prior session; otherwise behaves exactly like the real CLI. A simple
+# has a prior session; otherwise behaves exactly like the real CLI. Every launch
+# is prefixed with $env:PUTAPIN_FLAGS (if set). A simple
 # (non-advanced) function, so every argument passes through untouched via $args.
 if ($putapinInstall) {
     function claude {
@@ -78,14 +101,15 @@ if ($putapinInstall) {
             Write-Error "putapin: could not find the real 'claude' on PATH."
             return
         }
+        $flags = @(Get-PutapinFlags)
         $here = (Get-Location -PSProvider FileSystem).ProviderPath
         if ($args.Count -gt 0 -or -not (Test-PutapinInteractive) -or -not (Test-PutapinSession $here)) {
-            & $real @args
+            & $real @flags @args
             return
         }
         switch (Read-PutapinAnswer) {
-            'yes'   { & $real --continue }
-            'no'    { & $real }
+            'yes'   { & $real @flags --continue }
+            'no'    { & $real @flags }
             default { $global:LASTEXITCODE = 130 }
         }
     }
